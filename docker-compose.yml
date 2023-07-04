@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15.3-alpine3.18
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_MULTIPLE_DATABASES: reference
+    healthcheck:
+      test: pg_isready --username "postgres" --dbname "reference"
+      interval: 1s
+      retries: 5
+      timeout: 5s
+    ports:
+      - "32260:5432"
+    volumes:
+      - ./docker-multiple-databases.sh:/docker-entrypoint-initdb.d/docker-multiple-databases.sh:ro
+
+  migrate:
+    image: migrate/migrate:v4.16.2
+    command: > 
+      -source 'file:///migrations'
+      -database 'postgresql://postgres:postgres@postgres:5432/reference?sslmode=disable' up
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations:ro
