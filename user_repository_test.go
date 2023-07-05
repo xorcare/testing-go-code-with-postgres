@@ -20,6 +20,8 @@ func TestUserRepository_CreateUser(t *testing.T) {
 		t.Skip("skipping test in short mode")
 	}
 
+	t.Parallel()
+
 	newFullyFiledUser := func() User {
 		return User{
 			ID:        uuid.New(),
@@ -29,6 +31,8 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	}
 
 	t.Run("Successfully created a User", func(t *testing.T) {
+		t.Parallel()
+
 		// Arrange
 		postgres := testingpg.New(t)
 		repo := NewUserRepository(postgres.PgxPool())
@@ -48,6 +52,8 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	})
 
 	t.Run("Cannot create a user with the same ID", func(t *testing.T) {
+		t.Parallel()
+
 		// Arrange
 		postgres := testingpg.New(t)
 		repo := NewUserRepository(postgres.PgxPool())
@@ -71,7 +77,11 @@ func TestUserRepository_ReadUser(t *testing.T) {
 		t.Skip("skipping test in short mode")
 	}
 
+	t.Parallel()
+
 	t.Run("Get an error if the user does not exist", func(t *testing.T) {
+		t.Parallel()
+
 		// Arrange
 		postgres := testingpg.New(t)
 		repo := NewUserRepository(postgres.PgxPool())
