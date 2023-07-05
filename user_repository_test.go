@@ -16,6 +16,10 @@ import (
 )
 
 func TestUserRepository_CreateUser(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+
 	newFullyFiledUser := func() User {
 		return User{
 			ID:        uuid.New(),
@@ -63,6 +67,10 @@ func TestUserRepository_CreateUser(t *testing.T) {
 }
 
 func TestUserRepository_ReadUser(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+
 	t.Run("Get an error if the user does not exist", func(t *testing.T) {
 		// Arrange
 		postgres := testingpg.New(t)
