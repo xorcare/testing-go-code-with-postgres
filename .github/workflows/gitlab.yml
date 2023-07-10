@@ -1,0 +1,25 @@
+name: GitLab
+
+on: [ push ]
+
+jobs:
+  mirror:
+    name: Mirroring to GitLab
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Mirror repository to Gitlab
+        run: |
+          set -e -x
+          git remote add gitlab "${{ vars.GITLAB_REPO }}"
+          git config --global url."https://${{ vars.GITLAB_USERNAME }}:${{ secrets.GITLAB_PUSH_TOKEN }}@gitlab.com".insteadOf https://gitlab.com
+          git push --force gitlab "$GITHUB_REF_NAME"
+      - name: Run GitLab CI
+        run: >
+          curl -i --fail
+          --request POST
+          --form token=${{ secrets.GITLAB_CI_TOKEN }}
+          --form ref="${{ github.ref_name }}"
+          https://gitlab.com/api/v4/projects/${{ vars.GITLAB_PROJECT_ID }}/trigger/pipeline

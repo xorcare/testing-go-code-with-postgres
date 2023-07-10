@@ -1,0 +1,48 @@
+image: golang:1.20
+
+stages:
+  - test
+
+# Check that all packages are compiling.
+build:
+  stage: test
+  script:
+    - make build
+  only:
+    - branches
+
+# Check that all integration tests are labeled.
+test-short:
+  stage: test
+  script:
+    - make test-short
+  only:
+    - branches
+
+# Runs all test.
+test:
+  services:
+    - docker:dind
+  stage: test
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    TESTING_DB_URL: postgresql://postgres:postgres@docker:32260/postgres?sslmode=disable
+  before_script:
+    - curl -L "https://github.com/docker/compose/releases/download/v2.19.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    - chmod +x /usr/local/bin/docker-compose
+    - docker-compose --version
+    - make test-env-up
+  script:
+    - make test
+    - go get github.com/boumenot/gocover-cobertura
+    - go run github.com/boumenot/gocover-cobertura < coverage.out > coverage.xml
+  after_script:
+    - make test-env-down
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  coverage: '/^total:\s+\(statements\)\s+(\d+(?:\.\d+)?%)/'
+  only:
+    - branches
