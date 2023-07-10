@@ -34,6 +34,11 @@ jobs:
       - name: Teardown test environment
         run: make test-env-up
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
   golangci:
     name: lint
     runs-on: ubuntu-latest
