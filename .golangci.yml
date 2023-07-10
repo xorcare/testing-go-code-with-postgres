@@ -1,0 +1,14 @@
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - godot
+    - goimports
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - staticcheck
+    - typecheck
+    - unused
+    - whitespace
