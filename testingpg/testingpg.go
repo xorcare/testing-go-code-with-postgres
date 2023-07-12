@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,6 +35,7 @@ type Postgres struct {
 	ref string
 
 	conn *pgxpool.Pool
+	once sync.Once
 }
 
 func newPostgres(t TestingT) *Postgres {
@@ -67,15 +69,11 @@ func (p *Postgres) URL() string {
 }
 
 func (p *Postgres) PgxPool() *pgxpool.Pool {
-	pool, err := pgxpool.New(context.Background(), p.URL())
-	require.NoError(p.t, err)
-
-	// Automatically close connection after the test is completed.
-	p.t.Cleanup(func() {
-		pool.Close()
+	p.once.Do(func() {
+		p.conn = newPGxPool(p.t, p.URL())
 	})
 
-	return pool
+	return p.conn
 }
 
 func (p *Postgres) cloneFromReference(t TestingT) *Postgres {
@@ -116,4 +114,19 @@ func replaceDBName(t TestingT, dataSourceURL, dbname string) string {
 	require.NoError(t, err)
 	r.Path = dbname
 	return r.String()
+}
+
+func newPGxPool(t TestingT, dataSourceURL string) *pgxpool.Pool {
+	ctx, done := context.WithTimeout(context.Background(), 1*time.Second)
+	defer done()
+
+	pool, err := pgxpool.New(ctx, dataSourceURL)
+	require.NoError(t, err)
+
+	// Automatically close connection after the test is completed.
+	t.Cleanup(func() {
+		pool.Close()
+	})
+
+	return pool
 }
