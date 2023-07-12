@@ -3,6 +3,7 @@ version: "3.8"
 services:
   postgres:
     image: postgres:15.3-alpine3.18
+    command: postgres -c 'max_connections=1000'
     environment:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: postgres
