@@ -25,7 +25,7 @@ type TestingT interface {
 }
 
 func New(t TestingT) *Postgres {
-	return newPostgres(t).cloneFromReference(t)
+	return newPostgres(t).cloneFromReference()
 }
 
 type Postgres struct {
@@ -34,8 +34,8 @@ type Postgres struct {
 	url string
 	ref string
 
-	conn *pgxpool.Pool
-	once sync.Once
+	pgxpool     *pgxpool.Pool
+	pgxpoolOnce sync.Once
 }
 
 func newPostgres(t TestingT) *Postgres {
@@ -51,16 +51,11 @@ func newPostgres(t TestingT) *Postgres {
 		refDatabase = "reference"
 	}
 
-	pool, err := pgxpool.New(context.Background(), urlStr)
-	require.NoError(t, err)
-
 	return &Postgres{
 		t: t,
 
 		url: urlStr,
 		ref: refDatabase,
-
-		conn: pool,
 	}
 }
 
@@ -69,42 +64,40 @@ func (p *Postgres) URL() string {
 }
 
 func (p *Postgres) PgxPool() *pgxpool.Pool {
-	p.once.Do(func() {
-		p.conn = newPGxPool(p.t, p.URL())
+	p.pgxpoolOnce.Do(func() {
+		p.pgxpool = newPGxPool(p.t, p.URL())
 	})
 
-	return p.conn
+	return p.pgxpool
 }
 
-func (p *Postgres) cloneFromReference(t TestingT) *Postgres {
+func (p *Postgres) cloneFromReference() *Postgres {
 	newDatabaseName := uuid.New().String()
 
-	const sqlTemplate = `CREATE DATABASE %q WITH TEMPLATE %s;`
 	sql := fmt.Sprintf(
-		sqlTemplate,
+		`CREATE DATABASE %q WITH TEMPLATE %s;`,
 		newDatabaseName,
 		p.ref,
 	)
 
 	_, err := p.PgxPool().Exec(context.Background(), sql)
-	require.NoError(t, err)
+	require.NoError(p.t, err)
 
 	// Automatically drop database copy after the test is completed.
-	t.Cleanup(func() {
+	p.t.Cleanup(func() {
 		sql := fmt.Sprintf(`DROP DATABASE %q WITH (FORCE);`, newDatabaseName)
 
 		ctx, done := context.WithTimeout(context.Background(), time.Minute)
 		defer done()
 
-		_, err := p.conn.Exec(ctx, sql)
-		require.NoError(t, err)
+		_, err := p.PgxPool().Exec(ctx, sql)
+		require.NoError(p.t, err)
 	})
 
-	urlString := replaceDBName(t, p.URL(), newDatabaseName)
-
 	return &Postgres{
-		t:   p.t,
-		url: urlString,
+		t: p.t,
+
+		url: replaceDBName(p.t, p.URL(), newDatabaseName),
 		ref: newDatabaseName,
 	}
 }
