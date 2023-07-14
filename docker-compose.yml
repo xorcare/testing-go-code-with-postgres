@@ -18,6 +18,8 @@ services:
       - "32260:5432"
     volumes:
       - ./docker-multiple-databases.sh:/docker-entrypoint-initdb.d/docker-multiple-databases.sh:ro
+    tmpfs:
+      - /var/lib/postgresql/data:rw # Necessary to speed up integration tests.
 
   migrate:
     image: migrate/migrate:v4.16.2
