@@ -75,7 +75,7 @@ func (p *Postgres) cloneFromReference() *Postgres {
 	newDatabaseName := uuid.New().String()
 
 	sql := fmt.Sprintf(
-		`CREATE DATABASE %q WITH TEMPLATE %s;`,
+		`CREATE DATABASE %q WITH TEMPLATE %q;`,
 		newDatabaseName,
 		p.ref,
 	)
