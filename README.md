@@ -24,6 +24,22 @@ to organize integration testing of Go code with Postgres.
   of [GitHub Actions](https://github.com/xorcare/testing-go-code-with-postgres/blob/main/.github/workflows/go.yml)
   and [Gitlab CI](https://github.com/xorcare/testing-go-code-with-postgres/blob/main/.gitlab-ci.yml).
 
+Generating human-readable database names from `t.Name()` to simplifying problem investigation.
+The last 8 characters are a short unique identifier needed to prevent name collision, its necessary
+because the maximum length of the name is 63 bytes, and the name must be unique.
+
+```txt
+TestNewPostgres-Changes-are-not-visible-in-different-inWirPQD7J
+TestNewPostgres-Changes-are-not-visible-in-different-ineYp0ljjI
+TestNewPostgres-Successfully-connect-by-URL-and-get-verzGq4pGza
+TestNewPostgres-Successfully-obtained-a-version-using-a20YgZaMf
+TestNewPostgres-URL-is-different-at-different-instancesIMDkJgoP
+TestNewPostgres-URL-is-different-at-different-instancesjtSsjPR5
+TestUserRepository-CreateUser-Cannot-create-a-user-withmgmHFdZe
+TestUserRepository-CreateUser-Successfully-created-a-UspTBGNltW
+TestUserRepository-ReadUser-Get-an-error-if-the-user-doRqS1GvYh
+```
+
 ## How to use
 
 Run `make test-env-up test` and then everything will happen by itself.

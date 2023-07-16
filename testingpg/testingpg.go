@@ -6,13 +6,16 @@ package testingpg
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 	"sync"
 	"time"
+	"unicode"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
 )
@@ -20,8 +23,11 @@ import (
 type TestingT interface {
 	require.TestingT
 
-	Logf(format string, args ...any)
 	Cleanup(f func())
+	Log(args ...any)
+	Logf(format string, args ...any)
+	Name() string
+	Failed() bool
 }
 
 func New(t TestingT) *Postgres {
@@ -72,11 +78,13 @@ func (p *Postgres) PgxPool() *pgxpool.Pool {
 }
 
 func (p *Postgres) cloneFromReference() *Postgres {
-	newDatabaseName := uuid.New().String()
+	newDBName := newUniqueHumanReadableDatabaseName(p.t)
+
+	p.t.Log("database name for this test:", newDBName)
 
 	sql := fmt.Sprintf(
 		`CREATE DATABASE %q WITH TEMPLATE %q;`,
-		newDatabaseName,
+		newDBName,
 		p.ref,
 	)
 
@@ -85,7 +93,7 @@ func (p *Postgres) cloneFromReference() *Postgres {
 
 	// Automatically drop database copy after the test is completed.
 	p.t.Cleanup(func() {
-		sql := fmt.Sprintf(`DROP DATABASE %q WITH (FORCE);`, newDatabaseName)
+		sql := fmt.Sprintf(`DROP DATABASE %q WITH (FORCE);`, newDBName)
 
 		ctx, done := context.WithTimeout(context.Background(), time.Minute)
 		defer done()
@@ -97,9 +105,53 @@ func (p *Postgres) cloneFromReference() *Postgres {
 	return &Postgres{
 		t: p.t,
 
-		url: replaceDBName(p.t, p.URL(), newDatabaseName),
-		ref: newDatabaseName,
+		url: replaceDBName(p.t, p.URL(), newDBName),
+		ref: newDBName,
 	}
+}
+
+func newUniqueHumanReadableDatabaseName(t TestingT) string {
+	output := strings.Builder{}
+
+	// Reports the maximum identifier length. It is determined as one less
+	// than the value of NAMEDATALEN when building the server. The default
+	// value of NAMEDATALEN is 64; therefore the default max_identifier_length
+	// is 63 bytes, which can be less than 63 characters when using multibyte
+	// encodings.
+	// See https://www.postgresql.org/docs/15/runtime-config-preset.html
+	const maxIdentifierLengthBytes = 63
+
+	uid := genUnique8BytesID(t)
+	maxHumanReadableLenBytes := maxIdentifierLengthBytes - len(uid)
+
+	lastSymbolIsDash := false
+	for _, r := range t.Name() {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) {
+			output.WriteRune(r)
+			lastSymbolIsDash = false
+		} else {
+			if !lastSymbolIsDash {
+				output.WriteRune('-')
+			}
+			lastSymbolIsDash = true
+		}
+		if output.Len() >= maxHumanReadableLenBytes {
+			break
+		}
+	}
+
+	output.WriteString(uid)
+
+	return output.String()
+}
+
+func genUnique8BytesID(t TestingT) string {
+	bs := make([]byte, 6)
+
+	_, err := rand.Read(bs)
+	require.NoError(t, err)
+
+	return base64.RawURLEncoding.EncodeToString(bs)
 }
 
 func replaceDBName(t TestingT, dataSourceURL, dbname string) string {
