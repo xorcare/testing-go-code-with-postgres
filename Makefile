@@ -20,7 +20,7 @@ test-short: ## Run only unit tests, tests without I/O dependencies.
 
 .PHONY: test-env-up
 test-env-up: ## Run test environment.
-	@docker-compose up migrate
+	@docker-compose up --exit-code-from migrate migrate
 
 .PHONY: test-env-down
 test-env-down: ## Down and cleanup test environment.
