@@ -124,16 +124,16 @@ func newUniqueHumanReadableDatabaseName(t TestingT) string {
 	uid := genUnique8BytesID(t)
 	maxHumanReadableLenBytes := maxIdentifierLengthBytes - len(uid)
 
-	lastSymbolIsDash := false
+	lastSymbolIsHyphen := false
 	for _, r := range t.Name() {
 		if unicode.IsLetter(r) || unicode.IsNumber(r) {
 			output.WriteRune(r)
-			lastSymbolIsDash = false
+			lastSymbolIsHyphen = false
 		} else {
-			if !lastSymbolIsDash {
+			if !lastSymbolIsHyphen {
 				output.WriteRune('-')
 			}
-			lastSymbolIsDash = true
+			lastSymbolIsHyphen = true
 		}
 		if output.Len() >= maxHumanReadableLenBytes {
 			break
