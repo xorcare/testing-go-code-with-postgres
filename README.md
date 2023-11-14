@@ -10,6 +10,16 @@ The example suggests a solution to the problem of cleaning the database after
 running tests and the problem of running tests in parallel. It also shows how
 to organize integration testing of Go code with Postgres.
 
+## Quick start
+
+For quickly try integration tests locally, use following commands.
+
+```shell
+git clone https://github.com/xorcare/testing-go-code-with-postgres
+cd testing-go-code-with-postgres
+make test-env-up test
+```
+
 ## What's interesting here?
 
 - Example
@@ -39,10 +49,6 @@ TestUserRepository-CreateUser-Cannot-create-a-user-withmgmHFdZe
 TestUserRepository-CreateUser-Successfully-created-a-UspTBGNltW
 TestUserRepository-ReadUser-Get-an-error-if-the-user-doRqS1GvYh
 ```
-
-## How to use
-
-Run `make test-env-up test` and then everything will happen by itself.
 
 ## Disclaimer
 
