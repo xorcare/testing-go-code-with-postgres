@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package testing_go_code_with_postgres
+package testing_go_code_with_postgres_test
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
+	rootpkg "github.com/xorcare/testing-go-code-with-postgres"
 	"github.com/xorcare/testing-go-code-with-postgres/testingpg"
 )
 
@@ -19,11 +20,10 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
 	}
-
 	t.Parallel()
 
-	newFullyFiledUser := func() User {
-		return User{
+	newFullyFiledUser := func() rootpkg.User {
+		return rootpkg.User{
 			ID:        uuid.New(),
 			Username:  "gopher",
 			CreatedAt: time.Now().Truncate(time.Microsecond),
@@ -35,7 +35,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 		// Arrange
 		postgres := testingpg.New(t)
-		repo := NewUserRepository(postgres.PgxPool())
+		repo := rootpkg.NewUserRepository(postgres.PgxPool())
 
 		user := newFullyFiledUser()
 
@@ -56,7 +56,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 		// Arrange
 		postgres := testingpg.New(t)
-		repo := NewUserRepository(postgres.PgxPool())
+		repo := rootpkg.NewUserRepository(postgres.PgxPool())
 
 		user := newFullyFiledUser()
 
@@ -84,7 +84,7 @@ func TestUserRepository_ReadUser(t *testing.T) {
 
 		// Arrange
 		postgres := testingpg.New(t)
-		repo := NewUserRepository(postgres.PgxPool())
+		repo := rootpkg.NewUserRepository(postgres.PgxPool())
 
 		// Act
 		_, err := repo.ReadUser(context.Background(), uuid.New())

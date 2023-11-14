@@ -10,6 +10,7 @@ linters:
     - misspell
     - staticcheck
     - testifylint
+    - testpackage
     - typecheck
     - unused
     - whitespace
