@@ -20,6 +20,53 @@ cd testing-go-code-with-postgres
 make test-env-up test
 ```
 
+<details>
+<summary>Example of output</summary>
+
+```text
+❯ git clone https://github.com/xorcare/testing-go-code-with-postgres
+cd testing-go-code-with-postgres
+make test-env-up test
+Cloning into 'testing-go-code-with-postgres'...
+remote: Enumerating objects: 103, done.
+remote: Counting objects: 100% (45/45), done.
+remote: Compressing objects: 100% (24/24), done.
+remote: Total 103 (delta 26), reused 29 (delta 20), pack-reused 58
+Receiving objects: 100% (103/103), 27.58 KiB | 3.94 MiB/s, done.
+Resolving deltas: 100% (40/40), done.
+[+] Running 15/15
+ ✔ migrate 5 layers [⣿⣿⣿⣿⣿]      0B/0B      Pulled                                             5.0s 
+   ✔ 08409d417260 Pull complete                                                                1.5s 
+   ✔ 2f9061c5186e Pull complete                                                                0.8s 
+   ✔ de4eb1257b2b Pull complete                                                                2.2s 
+   ✔ 750ec3989a15 Pull complete                                                                1.6s 
+   ✔ 586322a68347 Pull complete                                                                2.2s 
+ ✔ postgres 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                        15.2s 
+   ✔ 9fda8d8052c6 Pull complete                                                                2.5s 
+   ✔ b0d9bb38da5c Pull complete                                                                2.8s 
+   ✔ a99f2e61e525 Pull complete                                                                2.8s 
+   ✔ eb307cc1ffd3 Pull complete                                                               11.1s 
+   ✔ 99aedaa309df Pull complete                                                                4.0s 
+   ✔ 1d4087443ab6 Pull complete                                                                3.5s 
+   ✔ 278b6fc01aef Pull complete                                                                4.2s 
+   ✔ 024b1a6a5c4d Pull complete                                                                4.9s 
+[+] Building 0.0s (0/0)                                                              docker:default
+[+] Running 3/2
+ ✔ Network testing-go-code-with-postgres_default       Created                                 0.0s 
+ ✔ Container testing-go-code-with-postgres-postgres-1  Created                                 0.2s 
+ ✔ Container testing-go-code-with-postgres-migrate-1   Created                                 0.0s 
+Attaching to testing-go-code-with-postgres-migrate-1
+testing-go-code-with-postgres-migrate-1  | 1/u create_users_table (4.481416ms)
+testing-go-code-with-postgres-migrate-1 exited with code 0
+Aborting on container exit...
+[+] Stopping 1/0
+ ✔ Container testing-go-code-with-postgres-migrate-1  Stopped                                  0.0s 
+ok  	github.com/xorcare/testing-go-code-with-postgres	1.500s	coverage: 100.0% of statements
+ok  	github.com/xorcare/testing-go-code-with-postgres/testingpg	1.764s	coverage: 100.0% of statements
+total:	(statements)	100.0%
+```
+</details>
+
 ## What's interesting here?
 
 - Example
@@ -38,7 +85,10 @@ Generating human-readable database names from `t.Name()` to simplifying problem 
 The last 8 characters are a short unique identifier needed to prevent name collision, its necessary
 because the maximum length of the name is 63 bytes, and the name must be unique.
 
-```txt
+<details>
+<summary>Example of test names</summary>
+
+```text
 TestNewPostgres-Changes-are-not-visible-in-different-inWirPQD7J
 TestNewPostgres-Changes-are-not-visible-in-different-ineYp0ljjI
 TestNewPostgres-Successfully-connect-by-URL-and-get-verzGq4pGza
@@ -49,6 +99,7 @@ TestUserRepository-CreateUser-Cannot-create-a-user-withmgmHFdZe
 TestUserRepository-CreateUser-Successfully-created-a-UspTBGNltW
 TestUserRepository-ReadUser-Get-an-error-if-the-user-doRqS1GvYh
 ```
+</details>
 
 ## Disclaimer
 
