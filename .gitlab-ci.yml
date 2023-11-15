@@ -31,7 +31,9 @@ test:
     - curl -fsSL https://get.docker.com -o install-docker.sh
     - sh install-docker.sh
     - docker version
-    - docker compose version
+    - shopt -s expand_aliases
+    - alias docker-compose='docker compose'
+    - docker-compose version
     - make test-env-up
   script:
     - make test
