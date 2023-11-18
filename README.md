@@ -65,6 +65,7 @@ ok  	github.com/xorcare/testing-go-code-with-postgres	1.500s	coverage: 100.0% of
 ok  	github.com/xorcare/testing-go-code-with-postgres/testingpg	1.764s	coverage: 100.0% of statements
 total:	(statements)	100.0%
 ```
+
 </details>
 
 ## What's interesting here?
@@ -99,6 +100,33 @@ TestUserRepository-CreateUser-Cannot-create-a-user-withmgmHFdZe
 TestUserRepository-CreateUser-Successfully-created-a-UspTBGNltW
 TestUserRepository-ReadUser-Get-an-error-if-the-user-doRqS1GvYh
 ```
+
+</details>
+
+## Known issues
+
+When using **colima** on macos you may have problems if you clone this project to a temporary
+directory like this:
+
+```text
+/var/folders/3p/glp5vp4916n03wmjh_b0gf6m0000gn/T/tmp.lbM4pbW2/testing-go-code-with-postgres
+```
+
+This problem is caused by incorrect mounting of files, and looks like this:
+
+<details>
+<summary>Example of output</summary>
+
+```text
+/var/folders/3p/glp5vp4916n03wmjh_b0gf6m0000gn/T/tmp.lbM4pbW2/testing-go-code-with-postgres
+❯ docker-compose up
+...
+testing-go-code-with-postgres-postgres-1  | /usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/docker-multiple-databases.sh
+testing-go-code-with-postgres-postgres-1  | /usr/local/bin/docker-entrypoint.sh: line 170: /docker-entrypoint-initdb.d/docker-multiple-databases.sh: Is a directory
+testing-go-code-with-postgres-postgres-1 exited with code 126
+dependency failed to start: container testing-go-code-with-postgres-postgres-1 exited (126)
+```
+
 </details>
 
 ## Disclaimer
