@@ -3,7 +3,7 @@ module github.com/xorcare/testing-go-code-with-postgres
 go 1.20
 
 require (
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/stretchr/testify v1.8.4
 )
