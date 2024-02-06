@@ -1,25 +1,25 @@
 name: GitLab
 
-on: [ push ]
+on:
+  push:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   mirror:
     name: Mirroring to GitLab
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Mirror repository to Gitlab
         run: |
           set -e -x
-          git remote add gitlab "${{ vars.GITLAB_REPO }}"
-          git config --global url."https://${{ vars.GITLAB_USERNAME }}:${{ secrets.GITLAB_PUSH_TOKEN }}@gitlab.com".insteadOf https://gitlab.com
+          ssh-keyscan -H "${{ vars.GITLAB_HOSTNAME }}" | tee -a ~/.ssh/known_hosts
+          git remote add gitlab "${{ vars.GITLAB_REPO_SSH }}"
           git push --force gitlab "$GITHUB_REF_NAME"
-      - name: Run GitLab CI
-        run: >
-          curl -i --fail
-          --request POST
-          --form token=${{ secrets.GITLAB_CI_TOKEN }}
-          --form ref="${{ github.ref_name }}"
-          https://gitlab.com/api/v4/projects/${{ vars.GITLAB_PROJECT_ID }}/trigger/pipeline
