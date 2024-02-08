@@ -47,3 +47,22 @@ test:
   coverage: '/^total:\s+\(statements\)\s+(\d+(?:\.\d+)?%)/'
   only:
     - branches
+
+# Check actuality of go.mod and go.sum
+#
+# See https://xorcare.ru/s/8dd13
+check-go-modules:
+  stage: test
+  script:
+    - go mod tidy
+    - |
+      git diff --exit-code && exit 0 || true    
+      echo -e "\033[0;31m"    
+      echo '######################################################################'    
+      echo    
+      echo "ERROR: go.mod or go.sum is different from the committed version"    
+      echo "Try using 'go mod tidy' to fix the go.mod and go.sum files"    
+      echo "Also, don't forget to commit and push changes"    
+      echo    
+      echo '######################################################################'    
+      exit 1
