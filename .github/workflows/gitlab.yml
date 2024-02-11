@@ -3,7 +3,7 @@ name: GitLab
 on:
   push:
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:

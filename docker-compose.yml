@@ -23,7 +23,7 @@ services:
 
   migrate:
     image: migrate/migrate:v4.16.2
-    command: > 
+    command: >
       -source 'file:///migrations'
       -database 'postgresql://postgres:postgres@postgres:5432/reference?sslmode=disable' up
     depends_on:
