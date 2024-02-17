@@ -31,8 +31,36 @@ type TestingT interface {
 	Failed() bool
 }
 
+const defaultPostgresURL = "postgresql://postgres:postgres@localhost:32260/postgres?sslmode=disable"
+
 func NewWithIsolatedDatabase(t TestingT) *Postgres {
-	return newPostgres(t).cloneFromReference()
+	return newPostgres(t, defaultPostgresURL).cloneFromReference()
+}
+
+func NewWithTransactionalCleanup(t TestingT) interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+} {
+	// databaseName a separate database is used for transactional cleanup.
+	const databaseName = "transaction"
+
+	postgres := newPostgres(t, defaultPostgresURL)
+	postgres = postgres.replaceDBName(databaseName)
+
+	ctx, done := context.WithCancel(context.Background())
+	t.Cleanup(done)
+
+	tx, err := postgres.DB().BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelRepeatableRead,
+		ReadOnly:  false,
+	})
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		require.NoError(t, tx.Rollback())
+	})
+
+	return tx
 }
 
 type Postgres struct {
@@ -45,10 +73,10 @@ type Postgres struct {
 	sqlDBOnce sync.Once
 }
 
-func newPostgres(t TestingT) *Postgres {
+func newPostgres(t TestingT, defaultPostgresURL string) *Postgres {
 	urlStr := os.Getenv("TESTING_DB_URL")
 	if urlStr == "" {
-		urlStr = "postgresql://postgres:postgres@localhost:32260/postgres?sslmode=disable"
+		urlStr = defaultPostgresURL
 
 		const format = "env TESTING_DB_URL is empty, used default value: %s"
 
@@ -105,11 +133,22 @@ func (p *Postgres) cloneFromReference() *Postgres {
 		require.NoError(p.t, err)
 	})
 
+	return p.replaceDBName(newDBName)
+}
+
+func (p *Postgres) replaceDBName(newDBName string) *Postgres {
+	o := p.clone()
+	o.url = replaceDBName(p.t, p.URL(), newDBName)
+
+	return o
+}
+
+func (p *Postgres) clone() *Postgres {
 	return &Postgres{
 		t: p.t,
 
-		url: replaceDBName(p.t, p.URL(), newDBName),
-		ref: newDBName,
+		url: p.url,
+		ref: p.ref,
 	}
 }
 
@@ -176,7 +215,7 @@ func open(t TestingT, dataSourceURL string) *sql.DB {
 
 	// Automatically close connection after the test is completed.
 	t.Cleanup(func() {
-		db.Close()
+		require.NoError(t, db.Close())
 	})
 
 	return db

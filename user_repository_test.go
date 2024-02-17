@@ -8,3 +8,4 @@ package testing_go_code_with_postgres_test
 // database cleanup, this file is empty. The specific tests can be found
 // in the following files:
 // - user_repository_with_isolated_database_test.go
+// - user_repository_with_transactional_cleanup_test.go
