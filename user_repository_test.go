@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Vasiliy Vasilyuk. All rights reserved.
+// Copyright (c) 2023-2024 Vasiliy Vasilyuk. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -36,7 +36,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 		// Arrange
 		postgres := testingpg.New(t)
-		repo := rootpkg.NewUserRepository(postgres.PgxPool())
+		repo := rootpkg.NewUserRepository(postgres.DB())
 
 		user := newFullyFiledUser()
 
@@ -57,7 +57,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 		// Arrange
 		postgres := testingpg.New(t)
-		repo := rootpkg.NewUserRepository(postgres.PgxPool())
+		repo := rootpkg.NewUserRepository(postgres.DB())
 
 		user := newFullyFiledUser()
 
@@ -85,7 +85,7 @@ func TestUserRepository_ReadUser(t *testing.T) {
 
 		// Arrange
 		postgres := testingpg.New(t)
-		repo := rootpkg.NewUserRepository(postgres.PgxPool())
+		repo := rootpkg.NewUserRepository(postgres.DB())
 
 		// Act
 		_, err := repo.ReadUser(context.Background(), uuid.New())

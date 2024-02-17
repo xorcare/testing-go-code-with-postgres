@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Vasiliy Vasilyuk. All rights reserved.
+// Copyright (c) 2023-2024 Vasiliy Vasilyuk. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,7 @@ package testingpg
 import (
 	"context"
 	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
 	"fmt"
 	"net/url"
@@ -16,7 +17,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -40,8 +41,8 @@ type Postgres struct {
 	url string
 	ref string
 
-	pgxpool     *pgxpool.Pool
-	pgxpoolOnce sync.Once
+	sqlDB     *sql.DB
+	sqlDBOnce sync.Once
 }
 
 func newPostgres(t TestingT) *Postgres {
@@ -71,12 +72,12 @@ func (p *Postgres) URL() string {
 	return p.url
 }
 
-func (p *Postgres) PgxPool() *pgxpool.Pool {
-	p.pgxpoolOnce.Do(func() {
-		p.pgxpool = newPGxPool(p.t, p.URL())
+func (p *Postgres) DB() *sql.DB {
+	p.sqlDBOnce.Do(func() {
+		p.sqlDB = open(p.t, p.URL())
 	})
 
-	return p.pgxpool
+	return p.sqlDB
 }
 
 func (p *Postgres) cloneFromReference() *Postgres {
@@ -90,7 +91,7 @@ func (p *Postgres) cloneFromReference() *Postgres {
 		p.ref,
 	)
 
-	_, err := p.PgxPool().Exec(context.Background(), sql)
+	_, err := p.DB().ExecContext(context.Background(), sql)
 	require.NoError(p.t, err)
 
 	// Automatically drop database copy after the test is completed.
@@ -100,7 +101,7 @@ func (p *Postgres) cloneFromReference() *Postgres {
 		ctx, done := context.WithTimeout(context.Background(), time.Minute)
 		defer done()
 
-		_, err := p.PgxPool().Exec(ctx, sql)
+		_, err := p.DB().ExecContext(ctx, sql)
 		require.NoError(p.t, err)
 	})
 
@@ -169,17 +170,14 @@ func replaceDBName(t TestingT, dataSourceURL, dbname string) string {
 	return r.String()
 }
 
-func newPGxPool(t TestingT, dataSourceURL string) *pgxpool.Pool {
-	ctx, done := context.WithTimeout(context.Background(), 1*time.Second)
-	defer done()
-
-	pool, err := pgxpool.New(ctx, dataSourceURL)
+func open(t TestingT, dataSourceURL string) *sql.DB {
+	db, err := sql.Open("pgx/v5", dataSourceURL)
 	require.NoError(t, err)
 
 	// Automatically close connection after the test is completed.
 	t.Cleanup(func() {
-		pool.Close()
+		db.Close()
 	})
 
-	return pool
+	return db
 }
