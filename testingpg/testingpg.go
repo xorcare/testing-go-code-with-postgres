@@ -32,7 +32,32 @@ type TestingT interface {
 }
 
 func New(t TestingT) *Postgres {
-	return newPostgres(t).cloneFromReference()
+	const defaultPostgresURL = "postgresql://postgres:postgres@localhost:32260/postgres?sslmode=disable"
+	return newPostgres(t, defaultPostgresURL).cloneFromReference()
+}
+
+func NewWithTransactionalCleanup(t TestingT) (db interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
+}) {
+	const defaultPostgresURL = "postgresql://postgres:postgres@localhost:32260/transaction?sslmode=disable"
+	postgres := newPostgres(t, defaultPostgresURL)
+	ctx, done := context.WithCancel(context.Background())
+	t.Cleanup(done)
+
+	tx, err := postgres.DB().BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelRepeatableRead,
+		ReadOnly:  false,
+	})
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		require.NoError(t, tx.Rollback())
+	})
+
+	return tx
 }
 
 type Postgres struct {
@@ -45,10 +70,10 @@ type Postgres struct {
 	pgxpoolOnce sync.Once
 }
 
-func newPostgres(t TestingT) *Postgres {
+func newPostgres(t TestingT, defaultPostgresURL string) *Postgres {
 	urlStr := os.Getenv("TESTING_DB_URL")
 	if urlStr == "" {
-		urlStr = "postgresql://postgres:postgres@localhost:32260/postgres?sslmode=disable"
+		urlStr = defaultPostgresURL
 		const format = "env TESTING_DB_URL is empty, used default value: %s"
 		t.Logf(format, urlStr)
 	}
@@ -168,7 +193,7 @@ func open(t TestingT, dataSourceURL string) *sql.DB {
 
 	// Automatically close connection after the test is completed.
 	t.Cleanup(func() {
-		db.Close()
+		require.NoError(t, db.Close())
 	})
 
 	return db

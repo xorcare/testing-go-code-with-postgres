@@ -8,7 +8,7 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
-      POSTGRES_MULTIPLE_DATABASES: reference
+      POSTGRES_MULTIPLE_DATABASES: reference, transaction
     healthcheck:
       test: pg_isready --username "postgres" --dbname "reference"
       interval: 1s
@@ -21,7 +21,7 @@ services:
     tmpfs:
       - /var/lib/postgresql/data:rw # Necessary to speed up integration tests.
 
-  migrate:
+  migrate-reference:
     image: migrate/migrate:v4.16.2
     command: >
       -source 'file:///migrations'
@@ -31,3 +31,25 @@ services:
         condition: service_healthy
     volumes:
       - ./migrations:/migrations:ro
+
+  migrate-transaction:
+    image: migrate/migrate:v4.16.2
+    command: >
+      -source 'file:///migrations'
+      -database 'postgresql://postgres:postgres@postgres:5432/transaction?sslmode=disable' up
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations:ro
+
+  migrate:
+    image: postgres:15.3-alpine3.18
+    command: echo 'All migrations have been successfully applied!'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate-reference:
+        condition: service_completed_successfully
+      migrate-transaction:
+        condition: service_completed_successfully
