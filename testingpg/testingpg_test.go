@@ -69,9 +69,9 @@ func TestNewPostgres(t *testing.T) {
 		ctx := context.Background()
 
 		// Act
-		const sql = `CREATE TABLE "no_conflict" (id integer PRIMARY KEY)`
-		_, err1 := postgres1.DB().ExecContext(ctx, sql)
-		_, err2 := postgres2.DB().ExecContext(ctx, sql)
+		const sqlStr = `CREATE TABLE "no_conflict" (id integer PRIMARY KEY)`
+		_, err1 := postgres1.DB().ExecContext(ctx, sqlStr)
+		_, err2 := postgres2.DB().ExecContext(ctx, sqlStr)
 
 		// Assert
 		require.NoError(t, err1)
@@ -91,5 +91,56 @@ func TestNewPostgres(t *testing.T) {
 
 		// Assert
 		require.NotEqual(t, url1, url2)
+	})
+}
+
+func TestNewWithTransactionalCleanup(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+
+	t.Parallel()
+
+	t.Run("Successfully obtained a version", func(t *testing.T) {
+		t.Parallel()
+
+		// Arrange
+		tx := testingpg.NewWithTransactionalCleanup(t)
+		ctx := context.Background()
+
+		// Act
+		var version string
+		err := tx.QueryRowContext(ctx, "SELECT version();").Scan(&version)
+
+		// Assert
+		require.NoError(t, err)
+		require.NotEmpty(t, version)
+
+		t.Log(version)
+	})
+
+	t.Run("Changes are not visible in different instances", func(t *testing.T) {
+		t.Parallel()
+
+		// Arrange
+		ctx := context.Background()
+		const sqlStr = `CREATE TABLE "no_conflict" (id integer PRIMARY KEY)`
+
+		t.Run("Arrange", func(t *testing.T) {
+			tx := testingpg.NewWithTransactionalCleanup(t)
+			_, err := tx.ExecContext(ctx, sqlStr)
+			require.NoError(t, err)
+		})
+
+		var err error
+
+		// Act
+		t.Run("Act", func(t *testing.T) {
+			tx := testingpg.NewWithTransactionalCleanup(t)
+			_, err = tx.ExecContext(ctx, sqlStr)
+		})
+
+		// Assert
+		require.NoError(t, err, "side effects must be isolated for each instance")
 	})
 }
