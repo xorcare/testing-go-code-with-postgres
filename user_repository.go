@@ -6,18 +6,18 @@ package testing_go_code_with_postgres
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewUserRepository(db *pgxpool.Pool) *UserRepository {
+func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
 type UserRepository struct {
-	db *pgxpool.Pool
+	db *sql.DB
 }
 
 func (r *UserRepository) ReadUser(ctx context.Context, userID uuid.UUID) (User, error) {
@@ -25,7 +25,7 @@ func (r *UserRepository) ReadUser(ctx context.Context, userID uuid.UUID) (User, 
 
 	user := User{}
 
-	row := r.db.QueryRow(ctx, sql, userID)
+	row := r.db.QueryRowContext(ctx, sql, userID)
 	err := row.Scan(&user.ID, &user.Username, &user.CreatedAt)
 	if err != nil {
 		const format = "failed selection of User from database: %v"
@@ -38,7 +38,7 @@ func (r *UserRepository) ReadUser(ctx context.Context, userID uuid.UUID) (User, 
 func (r *UserRepository) CreateUser(ctx context.Context, user User) error {
 	const sql = `INSERT INTO users (user_id, username, created_at) VALUES ($1,$2,$3);`
 
-	_, err := r.db.Exec(
+	_, err := r.db.ExecContext(
 		ctx,
 		sql,
 		user.ID,

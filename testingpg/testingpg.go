@@ -7,6 +7,7 @@ package testingpg
 import (
 	"context"
 	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
 	"fmt"
 	"net/url"
@@ -16,7 +17,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -40,7 +41,7 @@ type Postgres struct {
 	url string
 	ref string
 
-	pgxpool     *pgxpool.Pool
+	pgxpool     *sql.DB
 	pgxpoolOnce sync.Once
 }
 
@@ -69,9 +70,9 @@ func (p *Postgres) URL() string {
 	return p.url
 }
 
-func (p *Postgres) PgxPool() *pgxpool.Pool {
+func (p *Postgres) DB() *sql.DB {
 	p.pgxpoolOnce.Do(func() {
-		p.pgxpool = newPGxPool(p.t, p.URL())
+		p.pgxpool = open(p.t, p.URL())
 	})
 
 	return p.pgxpool
@@ -88,7 +89,7 @@ func (p *Postgres) cloneFromReference() *Postgres {
 		p.ref,
 	)
 
-	_, err := p.PgxPool().Exec(context.Background(), sql)
+	_, err := p.DB().ExecContext(context.Background(), sql)
 	require.NoError(p.t, err)
 
 	// Automatically drop database copy after the test is completed.
@@ -98,7 +99,7 @@ func (p *Postgres) cloneFromReference() *Postgres {
 		ctx, done := context.WithTimeout(context.Background(), time.Minute)
 		defer done()
 
-		_, err := p.PgxPool().Exec(ctx, sql)
+		_, err := p.DB().ExecContext(ctx, sql)
 		require.NoError(p.t, err)
 	})
 
@@ -161,17 +162,14 @@ func replaceDBName(t TestingT, dataSourceURL, dbname string) string {
 	return r.String()
 }
 
-func newPGxPool(t TestingT, dataSourceURL string) *pgxpool.Pool {
-	ctx, done := context.WithTimeout(context.Background(), 1*time.Second)
-	defer done()
-
-	pool, err := pgxpool.New(ctx, dataSourceURL)
+func open(t TestingT, dataSourceURL string) *sql.DB {
+	db, err := sql.Open("pgx/v5", dataSourceURL)
 	require.NoError(t, err)
 
 	// Automatically close connection after the test is completed.
 	t.Cleanup(func() {
-		pool.Close()
+		db.Close()
 	})
 
-	return pool
+	return db
 }

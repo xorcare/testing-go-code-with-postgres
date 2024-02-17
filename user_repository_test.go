@@ -35,7 +35,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 		// Arrange
 		postgres := testingpg.New(t)
-		repo := rootpkg.NewUserRepository(postgres.PgxPool())
+		repo := rootpkg.NewUserRepository(postgres.DB())
 
 		user := newFullyFiledUser()
 
@@ -56,7 +56,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 		// Arrange
 		postgres := testingpg.New(t)
-		repo := rootpkg.NewUserRepository(postgres.PgxPool())
+		repo := rootpkg.NewUserRepository(postgres.DB())
 
 		user := newFullyFiledUser()
 
@@ -84,7 +84,7 @@ func TestUserRepository_ReadUser(t *testing.T) {
 
 		// Arrange
 		postgres := testingpg.New(t)
-		repo := rootpkg.NewUserRepository(postgres.PgxPool())
+		repo := rootpkg.NewUserRepository(postgres.DB())
 
 		// Act
 		_, err := repo.ReadUser(context.Background(), uuid.New())

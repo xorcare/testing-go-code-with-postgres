@@ -50,7 +50,7 @@ func TestNewPostgres(t *testing.T) {
 
 		// Act
 		var version string
-		err := postgres.PgxPool().QueryRow(ctx, "SELECT version();").Scan(&version)
+		err := postgres.DB().QueryRowContext(ctx, "SELECT version();").Scan(&version)
 
 		// Assert
 		require.NoError(t, err)
@@ -70,8 +70,8 @@ func TestNewPostgres(t *testing.T) {
 
 		// Act
 		const sql = `CREATE TABLE "no_conflict" (id integer PRIMARY KEY)`
-		_, err1 := postgres1.PgxPool().Exec(ctx, sql)
-		_, err2 := postgres2.PgxPool().Exec(ctx, sql)
+		_, err1 := postgres1.DB().ExecContext(ctx, sql)
+		_, err2 := postgres2.DB().ExecContext(ctx, sql)
 
 		// Assert
 		require.NoError(t, err1)
