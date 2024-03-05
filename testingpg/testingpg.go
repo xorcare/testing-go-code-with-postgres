@@ -17,6 +17,7 @@ import (
 	"time"
 	"unicode"
 
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stretchr/testify/require"
 )
@@ -35,6 +36,10 @@ const defaultPostgresURL = "postgresql://postgres:postgres@localhost:32260/postg
 
 func NewWithIsolatedDatabase(t TestingT) *Postgres {
 	return newPostgres(t, defaultPostgresURL).cloneFromReference()
+}
+
+func NewWithIsolatedSchema(t TestingT) *Postgres {
+	return newPostgres(t, defaultPostgresURL).createSchema(t)
 }
 
 func NewWithTransactionalCleanup(t TestingT) interface {
@@ -106,6 +111,40 @@ func (p *Postgres) DB() *sql.DB {
 	})
 
 	return p.sqlDB
+}
+
+func (p *Postgres) createSchema(t TestingT) *Postgres {
+	schemaName := newUniqueHumanReadableDatabaseName(p.t)
+
+	// Unclear why, but if the scheme contains letters of different case, the
+	// tests stop working. At the moment I don't quite understand why this
+	// happens, but converting to lower case fixes the problem.
+	schemaName = strings.ToLower(schemaName)
+
+	ctx, done := context.WithCancel(context.Background())
+	t.Cleanup(done)
+
+	{
+		sql := fmt.Sprintf(`CREATE SCHEMA "%s";`, schemaName)
+
+		_, err := p.DB().ExecContext(ctx, sql)
+		require.NoError(t, err)
+	}
+
+	t.Cleanup(func() {
+		sql := fmt.Sprintf(`DROP SCHEMA "%s" CASCADE;`, schemaName)
+
+		_, err := p.DB().ExecContext(ctx, sql)
+		require.NoError(t, err)
+	})
+
+	pgurl := setSearchPath(t, p.URL(), schemaName)
+
+	return &Postgres{
+		t:   p.t,
+		ref: p.ref,
+		url: pgurl.String(),
+	}
 }
 
 func (p *Postgres) cloneFromReference() *Postgres {
@@ -219,4 +258,15 @@ func open(t TestingT, dataSourceURL string) *sql.DB {
 	})
 
 	return db
+}
+
+func setSearchPath(t TestingT, pgURL string, schemaName string) *url.URL {
+	pgurl, err := url.Parse(pgURL)
+	require.NoError(t, err)
+
+	query := pgurl.Query()
+	query.Set("search_path", schemaName)
+	pgurl.RawQuery = query.Encode()
+
+	return pgurl
 }

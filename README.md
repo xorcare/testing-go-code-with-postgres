@@ -78,6 +78,7 @@ total:	(statements)	100.0%
   package.
 - [Example of integration testing with isolated database for each testcase](https://github.com/xorcare/testing-go-code-with-postgres/blob/main/user_repository_with_isolated_database_test.go).
 - [Example of integration testing with transaction cleanup for each testcase](https://github.com/xorcare/testing-go-code-with-postgres/blob/main/user_repository_with_transactional_cleanup_test.go).
+- [Example of integration testing with isolated schema for each testcase](https://github.com/xorcare/testing-go-code-with-postgres/blob/main/user_repository_with_isolated_schema_test.go).
 - And example
   of [GitHub Actions](https://github.com/xorcare/testing-go-code-with-postgres/blob/main/.github/workflows/go.yml)
   and [Gitlab CI](https://github.com/xorcare/testing-go-code-with-postgres/blob/main/.gitlab-ci.yml).
