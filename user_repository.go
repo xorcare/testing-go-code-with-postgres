@@ -34,8 +34,7 @@ func (r *UserRepository) ReadUser(ctx context.Context, userID uuid.UUID) (User, 
 
 	err := row.Scan(&user.ID, &user.Username, &user.CreatedAt)
 	if err != nil {
-		const format = "failed selection of User from database: %v"
-
+		const format = "failed selection of User from database: %w"
 		return User{}, fmt.Errorf(format, err)
 	}
 
