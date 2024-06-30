@@ -48,7 +48,9 @@ func newPostgres(t TestingT) *Postgres {
 	urlStr := os.Getenv("TESTING_DB_URL")
 	if urlStr == "" {
 		urlStr = "postgresql://postgres:postgres@localhost:32260/postgres?sslmode=disable"
+
 		const format = "env TESTING_DB_URL is empty, used default value: %s"
+
 		t.Logf(format, urlStr)
 	}
 
@@ -125,16 +127,20 @@ func newUniqueHumanReadableDatabaseName(t TestingT) string {
 	maxHumanReadableLenBytes := maxIdentifierLengthBytes - len(uid)
 
 	lastSymbolIsHyphen := false
+
 	for _, r := range t.Name() {
 		if unicode.IsLetter(r) || unicode.IsNumber(r) {
 			output.WriteRune(r)
+
 			lastSymbolIsHyphen = false
 		} else {
 			if !lastSymbolIsHyphen {
 				output.WriteRune('-')
 			}
+
 			lastSymbolIsHyphen = true
 		}
+
 		if output.Len() >= maxHumanReadableLenBytes {
 			break
 		}
@@ -157,7 +163,9 @@ func genUnique8BytesID(t TestingT) string {
 func replaceDBName(t TestingT, dataSourceURL, dbname string) string {
 	r, err := url.Parse(dataSourceURL)
 	require.NoError(t, err)
+
 	r.Path = dbname
+
 	return r.String()
 }
 

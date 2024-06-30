@@ -20,6 +20,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
 	}
+
 	t.Parallel()
 
 	newFullyFiledUser := func() rootpkg.User {
