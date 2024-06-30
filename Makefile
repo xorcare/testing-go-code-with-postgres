@@ -8,6 +8,7 @@ build: ## Build a command to quickly check compiles.
 
 .PHONY: check
 check: lint build test ## Runs all necessary code checks.
+	@go mod tidy
 
 .PHONY: test
 test: ## Run all tests.
