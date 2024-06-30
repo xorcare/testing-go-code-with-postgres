@@ -31,7 +31,7 @@ type TestingT interface {
 	Failed() bool
 }
 
-func New(t TestingT) *Postgres {
+func NewWithIsolatedDatabase(t TestingT) *Postgres {
 	return newPostgres(t).cloneFromReference()
 }
 

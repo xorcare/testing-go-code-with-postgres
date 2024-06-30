@@ -25,7 +25,7 @@ func TestNewPostgres(t *testing.T) {
 		t.Parallel()
 
 		// Arrange
-		postgres := testingpg.New(t)
+		postgres := testingpg.NewWithIsolatedDatabase(t)
 
 		ctx := context.Background()
 		dbPool, err := pgxpool.New(ctx, postgres.URL())
@@ -45,7 +45,7 @@ func TestNewPostgres(t *testing.T) {
 		t.Parallel()
 
 		// Arrange
-		postgres := testingpg.New(t)
+		postgres := testingpg.NewWithIsolatedDatabase(t)
 		ctx := context.Background()
 
 		// Act
@@ -63,8 +63,8 @@ func TestNewPostgres(t *testing.T) {
 		t.Parallel()
 
 		// Arrange
-		postgres1 := testingpg.New(t)
-		postgres2 := testingpg.New(t)
+		postgres1 := testingpg.NewWithIsolatedDatabase(t)
+		postgres2 := testingpg.NewWithIsolatedDatabase(t)
 
 		ctx := context.Background()
 
@@ -82,8 +82,8 @@ func TestNewPostgres(t *testing.T) {
 		t.Parallel()
 
 		// Arrange
-		postgres1 := testingpg.New(t)
-		postgres2 := testingpg.New(t)
+		postgres1 := testingpg.NewWithIsolatedDatabase(t)
+		postgres2 := testingpg.NewWithIsolatedDatabase(t)
 
 		// Act
 		url1 := postgres1.URL()
