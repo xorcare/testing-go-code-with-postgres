@@ -30,6 +30,7 @@ test-env-down: ## Down and cleanup test environment.
 lint: tools ## Check the project with lint.
 	@golangci-lint run --fix ./...
 
+.PHONY: tools
 tools: ## Install all needed tools, e.g.
 	@go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
 
