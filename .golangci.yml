@@ -14,3 +14,10 @@ linters:
     - typecheck
     - unused
     - whitespace
+
+linters-settings:
+  unused:
+    field-writes-are-uses: false
+    post-statements-are-reads: true
+    exported-fields-are-used: false
+    local-variables-are-used: false
