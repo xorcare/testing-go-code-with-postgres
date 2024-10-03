@@ -3,6 +3,9 @@ image: golang:1.22
 stages:
   - test
 
+default:
+  timeout: 10 minutes
+
 # Check that all packages are compiling.
 build:
   stage: test
