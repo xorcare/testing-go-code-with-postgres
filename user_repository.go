@@ -51,7 +51,6 @@ func (r *UserRepository) CreateUser(ctx context.Context, user User) error {
 		user.Username,
 		user.CreatedAt,
 	)
-
 	if err != nil {
 		const format = "failed insertion of User to database: %v"
 		return fmt.Errorf(format, err)
