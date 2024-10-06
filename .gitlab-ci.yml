@@ -1,3 +1,4 @@
+---
 image: golang:1.22
 
 stages:
@@ -47,7 +48,7 @@ test:
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
-  coverage: '/^total:\s+\(statements\)\s+(\d+(?:\.\d+)?%)/'
+  coverage: /^total:\s+\(statements\)\s+(\d+(?:\.\d+)?%)/
   only:
     - branches
 
@@ -59,13 +60,13 @@ check-go-modules:
   script:
     - go mod tidy
     - |
-      git diff --exit-code && exit 0 || true    
-      echo -e "\033[0;31m"    
-      echo '######################################################################'    
-      echo    
-      echo "ERROR: go.mod or go.sum is different from the committed version"    
-      echo "Try using 'go mod tidy' to fix the go.mod and go.sum files"    
-      echo "Also, don't forget to commit and push changes"    
-      echo    
-      echo '######################################################################'    
+      git diff --exit-code && exit 0 || true
+      echo -e "\033[0;31m"
+      echo '######################################################################'
+      echo
+      echo "ERROR: go.mod or go.sum is different from the committed version"
+      echo "Try using 'go mod tidy' to fix the go.mod and go.sum files"
+      echo "Also, don't forget to commit and push changes"
+      echo
+      echo '######################################################################'
       exit 1
