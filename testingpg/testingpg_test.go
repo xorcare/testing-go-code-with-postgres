@@ -204,6 +204,7 @@ func TestNewWithTransactionalCleanup(t *testing.T) {
 
 		// Arrange
 		ctx := context.Background()
+
 		const sqlStr = `CREATE TABLE "no_conflict" (id integer PRIMARY KEY)`
 
 		t.Run("Arrange", func(t *testing.T) {
