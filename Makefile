@@ -33,7 +33,7 @@ lint: tools ## Check the project with lint.
 
 .PHONY: tools
 tools: ## Install all needed tools, e.g.
-	@go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
+	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
 
 .PHONY: help
 help: ## Show help for each of the Makefile targets.
