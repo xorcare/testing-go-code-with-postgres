@@ -14,13 +14,11 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
-
-	"github.com/xorcare/testing-go-code-with-postgres/migrations"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
 	rootpkg "github.com/xorcare/testing-go-code-with-postgres"
+	"github.com/xorcare/testing-go-code-with-postgres/migrations"
 	"github.com/xorcare/testing-go-code-with-postgres/testingpg"
 )
 
