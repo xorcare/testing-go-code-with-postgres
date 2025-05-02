@@ -33,14 +33,17 @@ linters:
       - examples$
 formatters:
   enable:
+    - gci
+    - gofmt
     - gofumpt
     - goimports
+    - golines
   settings:
-    gofumpt:
-      module-path: github.com/xorcare/testing-go-code-with-postgres
-    goimports:
-      local-prefixes:
-        - github.com/xorcare/testing-go-code-with-postgres
+    gci:
+      sections:
+        - standard
+        - default
+        - localmodule
   exclusions:
     generated: lax
     paths:
