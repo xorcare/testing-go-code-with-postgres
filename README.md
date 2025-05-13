@@ -66,6 +66,13 @@ total:	(statements)	100.0%
 
 </details>
 
+## Thank you for your support
+
+If you found this project useful, please support it by giving it a star
+on [GitHub](https://github.com/xorcare/testing-go-code-with-postgres).
+This will help other users discover the project and will motivate me to continue developing it!
+Thank you for your support!
+
 ## What's interesting here?
 
 - Example
