@@ -23,7 +23,7 @@ services:
       - /var/lib/postgresql/data:rw # Necessary to speed up integration tests.
 
   migrate-reference:
-    image: migrate/migrate:v4.19.0
+    image: migrate/migrate:v4.19.1
     command: >
       -source 'file:///migrations'
       -database 'postgresql://postgres:postgres@postgres:5432/reference?sslmode=disable' up
@@ -34,7 +34,7 @@ services:
       - ./migrations:/migrations:ro
 
   migrate-transaction:
-    image: migrate/migrate:v4.19.0
+    image: migrate/migrate:v4.19.1
     command: >
       -source 'file:///migrations'
       -database 'postgresql://postgres:postgres@postgres:5432/transaction?sslmode=disable' up
