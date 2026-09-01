@@ -1,3 +1,5 @@
+
+
 # Example of testing Go code with Postgres
 
 [![Go workflow status badge](https://github.com/xorcare/testing-go-code-with-postgres/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/xorcare/testing-go-code-with-postgres/actions/workflows/go.yml)
@@ -10,7 +12,7 @@ to organize integration testing of Go code with Postgres.
 
 ## Quick start
 
-For quickly try integration tests locally, use following commands.
+To quickly try integration tests locally, use the following commands.
 
 ```shell
 git clone https://github.com/xorcare/testing-go-code-with-postgres
